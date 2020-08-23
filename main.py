@@ -1,92 +1,8 @@
-# vn_question = "   Xe bus nào đi đến thành phố Huế lúc 20:00HR ?   "
-vn_question = "Thời gian nào xe bus B3 đi từ Đà Nẵng đến thành phố Hồ Chí Minh ?"
-# vn_question = "Xe bus nào đi đến thành phố Hồ Chí Minh ?"
-# vn_question = "Những xe bus nào đi đến Huế ?"
-# vn_question = "Những xe nào xuất phát từ thành phố Hồ Chí Minh ?"
-# vn_question = "Những xe nào đi từ Đà nẵng đến thành phố Hồ Chí Minh ?"
+import os
+from Input.question import vn_question
+from Input.database import vn_dictionary, vn_preposition_type, dependency_dict, database
 
 ################### a. Xây dựng quan hệ văn phạm #######################################################################
-
-# all lowercase
-vn_token_dict = {
-    # add for question: Xe bus nào đi đến thành phố Huế lúc 20:00HR ?
-    "xe bus": ("N", "BUS"),
-    "nào": ("WH", "NÀO"),
-    "đi": ("V", "ĐI"),
-    "đến": ("P", "ĐẾN"),
-    "thành phố huế": ("CITY", "HUE"),
-    "lúc": ("P", "LÚC"),
-    "20:00hr": ("TIME", "20:00HR"),
-
-    # add for question: Thời gian nào xe bus B3 đi từ Đà Nẵng đến Huế ?
-    "thời gian": ("TIME", "RUN-TIME"),
-    "b3": ("N", "B3"),
-    "từ": ("P", "TỪ"),
-    "đà nẵng": ("CITY", "DANANG"),
-    "huế": ("CITY", "HUE"),
-
-    # add for question: Xe bus nào đi đến thành phố Hồ Chí Minh ?
-    "thành phố hồ chí minh": ("CITY", "HCMC"),
-
-    # add for question: Những xe bus nào đi đến Huế ?
-    "những xe bus": ("N", "BUS"),
-
-    # add for question: Những xe nào xuất phát từ thành phố Hồ Chí Minh ?
-    "những xe": ("N", "BUS"),
-    "xuất phát": ("V", "XUẤTPHÁT"),
-
-    # add for question: Những xe nào đi từ Đà nẵng đến thành phố Hồ Chí Minh ?
-    # Nothing
-}
-
-vn_preposition_type = {
-    "từ": "SOURCE",
-    "đến": "DEST",
-    "lúc": "TIME",
-}
-
-dependency_dict = {
-    "N_WH": ("right_arc", "nmod"),
-    "N_V": ("left_arc", "nsubj"),
-    "P_CITY": ("left_arc", "case"),
-    "V_CITY": ("right_arc", "nmod"),
-    "V_TIME": ("right_arc", "tmod"),
-    "N_N": ("right_arc", "nmod"),
-    "P_TIME": ("left_arc", "case"),
-    "TIME_WH": ("right_arc", "nmod"),
-    "TIME_V": ("left_arc", "tmod"),
-}
-
-database = {
-    "BUS": {"B1", "B2", "B3", "B4"},
-    "ATIME": {
-        "B1 HUE 22:00HR",
-        "B2 HUE 22:30HR",
-        "B3 HCMC 05:00HR",
-        "B4 HCMC 05:30HR",
-        "B5 DANANG 13:30HR",
-        "B6 DANANG 09:30HR",
-        "B7 HCMC 20:30HR",
-    },
-    "DTIME": {
-        "B1 HCMC 10:00HR",
-        "B2 HCMC 12:30HR",
-        "B3 DANANG 19:00HR",
-        "B4 DANANG 17:30HR",
-        "B5 HUE 8:30HR",
-        "B6 HUE 5:30HR",
-        "B7 HUE 8:30HR",
-    },
-    "RUNTIME": {
-        "B1 HCMC HUE 12:00HR",
-        "B2 HCMC HUE 10:00HR",
-        "B3 DANANG HCMC 14:00HR",
-        "B4 HCMC DANANG 12:00HR",
-        "B5 DANANG HUE 5:00HR",
-        "B6 DANANG HUE 4:00HR",
-        "B7 HCMC HUE 12:00HR",
-    },
-}
 
 
 # Always choose the largest token in dict. Example:
@@ -101,7 +17,7 @@ def get_question_token(question):
     while start_idx < question_num_words:
         for end_idx in range(question_num_words, start_idx, -1):
             token = " ".join(question_words[start_idx:end_idx])
-            if token in vn_token_dict:
+            if token in vn_dictionary:
                 start_idx = end_idx
                 question_tokens.append(token)
                 break
@@ -119,7 +35,7 @@ def get_dependency(token_lst):
             idx += 1
             continue
 
-        relation = vn_token_dict.get(stack[-1])[0] + "_" + vn_token_dict.get(token_lst[idx])[0]
+        relation = vn_dictionary.get(stack[-1])[0] + "_" + vn_dictionary.get(token_lst[idx])[0]
         if relation in dependency_dict:
             if dependency_dict[relation][0] == "left_arc":
                 dependency.append("{}({},{})".format(dependency_dict[relation][1], token_lst[idx], stack[-1]))
@@ -135,7 +51,10 @@ def get_dependency(token_lst):
 
 vn_question_tokens = get_question_token(vn_question)
 vn_question_depend = get_dependency(vn_question_tokens)
-with open('output_a.txt', 'w') as writer:
+
+if not os.path.exists("Output"):
+    os.makedirs("Output")
+with open('Output/output_a.txt', 'w') as writer:
     writer.writelines("+ Tokens: {}\n".format(vn_question_tokens))
     writer.writelines("+ Dependency: {}\n".format(vn_question_depend))
 
@@ -165,7 +84,7 @@ vn_question_logical_form, idx = LogicalFormWH(), 1
 relation, word_1st, word_2nd = parse_dependency_code(vn_question_depend[0])
 if relation != "nmod" and word_2nd != "nào":
     exit("Invalid question: Câu hỏi phải bắt đầu bằng 'x nào'!")
-vn_question_logical_form.r.append("({} x)".format(vn_token_dict[word_1st][1]))
+vn_question_logical_form.r.append("({} x)".format(vn_dictionary[word_1st][1]))
 
 while idx < len(vn_question_depend):
     relation, word_1st, word_2nd = parse_dependency_code(vn_question_depend[idx])
@@ -174,40 +93,42 @@ while idx < len(vn_question_depend):
     elif relation == "case":
         if word_2nd not in vn_preposition_type:
             exit("Giới từ phải được định nghĩa kiểu trong vn_preposition_type")
-        vn_question_logical_form.r.append("({} x {})".format(vn_preposition_type[word_2nd], vn_token_dict[word_1st][1]))
+        vn_question_logical_form.r.append("({} x {})".format(vn_preposition_type[word_2nd], vn_dictionary[word_1st][1]))
         idx += 1  # skip the next nmod because already handled by case relation
     elif relation == "nmod":
-        vn_question_logical_form.r.append("({} {} x)".format(vn_token_dict[word_1st][1], vn_token_dict[word_2nd][1]))
+        vn_question_logical_form.r.append("({} {} x)".format(vn_dictionary[word_1st][1], vn_dictionary[word_2nd][1]))
     idx += 1
 
-with open('output_b.txt', 'w') as writer:
+with open('Output/output_b.txt', 'w') as writer:
     writer.writelines("+ Logical Form: {}\n".format(vn_question_logical_form.__str__()))
-
 
 
 ################### c. Tạo dạng ngữ nghĩa thủ tục ######################################################################
 
 # Check the question type
 if vn_question_logical_form.r[0].split(" ")[0].replace("(","") == "BUS":
-    vn_question_procedural, idx = [vn_question_logical_form.r[0]], 1
+    vn_question_procedural, idx = ["(BUS b)"], 1
     while idx < len(vn_question_logical_form.r):
         role = vn_question_logical_form.r[idx].split(" ")[0].replace("(", "")
         next_role = vn_question_logical_form.r[idx + 1].split(" ")[0].replace("(", "") if idx + 1 < len(
             vn_question_logical_form.r) else ""
         if role == "DEST":
             d = vn_question_logical_form.r[idx].split(" ")[-1][:-1]
-            vn_question_procedural.append("(ATIME x {} ?t)".format(d))
+            vn_question_procedural.append("(ATIME b {} ?t)".format(d))
         elif role == "SOURCE":
             s = vn_question_logical_form.r[idx].split(" ")[-1][:-1]
-            vn_question_procedural.append("(DTIME x {} ?t)".format(s))
+            vn_question_procedural.append("(DTIME b {} ?t)".format(s))
         elif role == "TIME":
             t = vn_question_logical_form.r[idx].split(" ")[-1][:-1]
             vn_question_procedural[-1] = vn_question_procedural[-1].replace("?t", t)
         idx += 1
-    with open('output_c.txt', 'w') as writer:
-        writer.writelines("+ Procedural Form: (PRINT x {})\n".format("".join(vn_question_procedural)))
+
+    vn_question_procedural_txt = "(PRINT b {})".format("".join(vn_question_procedural))
+    with open('Output/output_c.txt', 'w') as writer:
+        writer.writelines("+ Procedural Form: {}\n".format(vn_question_procedural_txt))
 else:
-    vn_question_procedural, idx = "(RUNTIME ?b ?s ?d ?t)", 0
+    # Assume it is run-time query, but if ?s and ?d is not filled, it will be converted to time query later
+    vn_question_procedural, idx = "(RUN-TIME ?b ?s ?d ?t)", 0
     while idx < len(vn_question_logical_form.r):
         role = vn_question_logical_form.r[idx].split(" ")[0].replace("(", "")
         if role == "DEST":
@@ -220,14 +141,29 @@ else:
             b = vn_question_logical_form.r[idx].split(" ")[1]
             vn_question_procedural = vn_question_procedural.replace("?b", b)
         idx += 1
-    with open('output_c.txt', 'w') as writer:
-        writer.writelines("+ Procedural Form: (PRINT t {})\n".format(vn_question_procedural))
+    vn_question_procedural_txt = "(PRINT t {})".format(vn_question_procedural)
+
+    # Converted to time query if ?s and ?d is not filled
+    if "?s" in vn_question_procedural and "?d" in vn_question_procedural:
+        exit("Invalid question!")
+    elif "?s" in vn_question_procedural:
+        procedure, bus, source, dest, time = vn_question_procedural.split(" ")
+        vn_question_procedural = ["(BUS {})".format(bus), "(ATIME {} {} t)".format(bus, dest)]
+        vn_question_procedural_txt = "(PRINT t {})".format("".join(vn_question_procedural))
+    elif "?d" in vn_question_procedural:
+        procedure, bus, source, dest, time = vn_question_procedural.split(" ")
+        vn_question_procedural = ["(BUS {})".format(bus), "(DTIME {} {} t)".format(bus, source)]
+        vn_question_procedural_txt = "(PRINT t {})".format("".join(vn_question_procedural))
+
+    with open('Output/output_c.txt', 'w') as writer:
+        writer.writelines("+ Procedural Form: {}\n".format(vn_question_procedural_txt))
 
 
 ################### d. Trả lời câu truy vấn ############################################################################
 
 # Check the question type
-if vn_question_logical_form.r[0].split(" ")[0].replace("(","") == "BUS":
+ans = None
+if "PRINT b" in vn_question_procedural_txt:
     bus_list = {
         "ATIME": [False, set()],
         "DTIME": [False, set()],
@@ -245,10 +181,8 @@ if vn_question_logical_form.r[0].split(" ")[0].replace("(","") == "BUS":
     for ans_lst in bus_list.values():
         if ans_lst[0]:
             ans = ans.intersection(ans_lst[1])
-    with open('output_d.txt', 'w') as writer:
-        writer.writelines("+ Answer: {}\n".format(ans if ans else None))
 
-else:
+elif "RUN-TIME" in vn_question_procedural_txt:
     procedure, bus, source, dest, time = vn_question_procedural.split(" ")
     procedure, time = procedure.replace("(", ""), time.replace(")", "")
     ans = None
@@ -256,6 +190,22 @@ else:
         data_bus, data_source, data_dest, data_time = data.split(" ")
         if bus == data_bus and source == data_source and dest == data_dest:
             ans = data_time
+elif "PRINT t" in vn_question_procedural_txt:
+    ans_lst = {}
+    parsed_data = vn_question_procedural[1].split(" ")
+    procedure, bus, loc, time = parsed_data[0].replace("(", ""), parsed_data[1], parsed_data[2], parsed_data[3].replace(")", "")
+    for data in database[procedure]:
+        data_bus, data_loc, data_time = data.split(" ")
+        if data_bus == bus and data_loc == loc:
+            ans_lst[data_bus] = data_time
 
-    with open('output_d.txt', 'w') as writer:
-        writer.writelines("+ Answer: {}\n".format(ans))
+    ans = []
+    for item in ans_lst.items():
+        if item[0] in database["BUS"]:
+            ans.append(item[1])
+
+else:
+    exit("The type of question has not handled yet!")
+
+with open('Output/output_d.txt', 'w') as writer:
+    writer.writelines("+ Answer: {}\n".format(ans if ans else None))

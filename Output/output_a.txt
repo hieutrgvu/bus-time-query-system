@@ -1,0 +1,2 @@
++ Tokens: ['xe bus', 'nào', 'đi', 'đến', 'thành phố hồ chí minh']
++ Dependency: ['nmod(xe bus,nào)', 'nsubj(đi,xe bus)', 'case(thành phố hồ chí minh,đến)', 'nmod(đi,thành phố hồ chí minh)']

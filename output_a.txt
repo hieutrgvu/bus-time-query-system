@@ -1,2 +1,0 @@
-+ Tokens: ['thời gian', 'nào', 'xe bus', 'b3', 'đi', 'từ', 'đà nẵng', 'đến', 'thành phố hồ chí minh']
-+ Dependency: ['nmod(thời gian,nào)', 'nmod(xe bus,b3)', 'nsubj(đi,xe bus)', 'tmod(đi,thời gian)', 'case(đà nẵng,từ)', 'nmod(đi,đà nẵng)', 'case(thành phố hồ chí minh,đến)', 'nmod(đi,thành phố hồ chí minh)']

@@ -1,0 +1,1 @@
++ Logical Form: WH x: (&(BUS x)(DEST x HCMC)) (ĐI x)

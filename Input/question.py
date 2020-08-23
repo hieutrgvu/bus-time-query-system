@@ -1,0 +1,8 @@
+# vn_question = "   Xe bus nào đi đến thành phố Huế lúc 20:00HR ?   "
+# vn_question = "Thời gian nào xe bus B3 đi từ Đà Nẵng đến thành phố Hồ Chí Minh ?"
+# vn_question = "Thời gian nào xe bus B3 đi từ Đà Nẵng ?"
+# vn_question = "Thời gian nào xe bus B3 đi đến thành phố Hồ Chí Minh ?"
+vn_question = "Xe bus nào đi đến thành phố Hồ Chí Minh ?"
+# vn_question = "Những xe bus nào đi đến Huế ?"
+# vn_question = "Những xe nào xuất phát từ thành phố Hồ Chí Minh ?"
+# vn_question = "Những xe nào đi từ Đà nẵng đến thành phố Hồ Chí Minh ?"

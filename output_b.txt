@@ -1,1 +1,0 @@
-+ Logical Form: WH x: (&(RUN-TIME x)(BUS B3 x)(SOURCE x DANANG)(DEST x HCMC)) (ĐI x)
